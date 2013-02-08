@@ -4,7 +4,7 @@ from django.contrib.contenttypes.generic import GenericForeignKey
 from django.utils.translation import ugettext_lazy as _
 
 
-class ObjectAttachment(models.Model):
+class Attachment(models.Model):
     OBJECT_TYPE = (
         ('image', _('Image')),
         ('download', _('File for download')),
@@ -38,13 +38,21 @@ class ObjectAttachment(models.Model):
 
     def save(self, *args, **kwargs):
         if self.position is None:
-            # if position is not given, set it to max for that content_type and object_type plus 1
-            _same_type_objects = ObjectAttachment.objects.filter(
-                content_type=self.content_type, object_type=self.object_type)
-            self.position = (_same_type_objects.aggregate(p=models.Max('position'))['p'] or 0) + 1
+            self.position = self.get_next_position()
         super(ObjectAttachment, self).save(*args, **kwargs)
 
+    def get_next_position(self):
+        # if position is not given, set it to max for that content_type and object_type plus 1
+        _same_type_objects = ObjectAttachment.objects.filter(group=self.group,
+            content_type=self.content_type)
+        return (_same_type_objects.aggregate(p=models.Max('position'))['p'] or 0) + 1
+
 class ObjectAttachable(models.Model):
+    attachments = GenericForeignKey(Attachment)
+
+    class Meta:
+        abstract = True
+
     def main_image(self):
         try:
             return self.attachments.filter(object_type='image')[0]
@@ -56,6 +64,3 @@ class ObjectAttachable(models.Model):
 
     def downloadables(self):
         return self.attachments.filter(object_type='download')
-
-    class Meta:
-        abstract = True
