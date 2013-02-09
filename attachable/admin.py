@@ -1,10 +1,9 @@
-from django.contrib import admin
-from django.conf import settings
 from django.contrib import contenttypes
+from .models import Attachment
 
 
-class ObjectAttachmentInline(contenttypes.generic.GenericStackedInline):
-    model = ObjectAttachment
+class AttachmentInline(contenttypes.generic.GenericStackedInline):
+    model = Attachment
     extra = 0
     ct_field = 'content_type'
     fk_field = 'object_id'
