@@ -39,11 +39,11 @@ class Attachment(models.Model):
     def save(self, *args, **kwargs):
         if self.position is None:
             self.position = self.get_next_position()
-        super(ObjectAttachment, self).save(*args, **kwargs)
+        super(Attachment, self).save(*args, **kwargs)
 
     def get_next_position(self):
         # if position is not given, set it to max for that content_type and object_type plus 1
-        _same_type_objects = ObjectAttachment.objects.filter(group=self.group,
+        _same_type_objects = Attachment.objects.filter(group=self.group,
             content_type=self.content_type)
         return (_same_type_objects.aggregate(p=models.Max('position'))['p'] or 0) + 1
 
