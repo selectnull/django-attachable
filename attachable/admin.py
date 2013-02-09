@@ -10,9 +10,6 @@ class AttachmentInline(contenttypes.generic.GenericStackedInline):
 
     fieldsets = (
         (None, {
-            'fields': (('object_file', 'object_type', 'group', 'position', ), ),
-        }),
-        (None, {
-            'fields': ('title', 'alt_title', ),
+            'fields': (('object_file', 'object_type'), ('group', 'position'), ('title', 'alt_title'), ),
         }),
     )
