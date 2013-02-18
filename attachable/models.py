@@ -19,6 +19,7 @@ class Attachment(models.Model):
     content_object = GenericForeignKey(ct_field="content_type", fk_field="object_id")
 
     object_file = models.FileField(upload_to='attachments', verbose_name=_('File'))
+    object_hash = models.CharField(max_length=100, editable=False, verbose_name=_(u'Hash'))
     object_type = models.CharField(max_length=10, choices=OBJECT_TYPE, default=OBJECT_TYPE[0][0],
         verbose_name=_('Type'))
     group = models.CharField(max_length=50, blank=True,
@@ -39,6 +40,7 @@ class Attachment(models.Model):
     def save(self, *args, **kwargs):
         if self.position is None:
             self.position = self.get_next_position()
+        self.write_object_hash(False)
         super(Attachment, self).save(*args, **kwargs)
 
     def get_next_position(self):
@@ -46,6 +48,18 @@ class Attachment(models.Model):
         _same_type_objects = Attachment.objects.filter(group=self.group,
             content_type=self.content_type)
         return (_same_type_objects.aggregate(p=models.Max('position'))['p'] or 0) + 1
+
+    def calculate_object_hash(self):
+        import hashlib
+        h = hashlib.sha1()
+        h.update(self.object_file.file.read())
+        return h.hexdigest()
+
+    def write_object_hash(self, save=True):
+        self.object_hash = self.calculate_object_hash()
+        if save:
+            self.save()
+
 
 class ObjectAttachable(models.Model):
     attachments = GenericForeignKey(Attachment)
