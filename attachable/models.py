@@ -33,6 +33,7 @@ class Attachment(models.Model):
         db_table = "object_attachments"
         verbose_name = _(u"Attachment")
         verbose_name_plural = _(u"Attachments")
+        ordering = ('position', )
 
     def __unicode__(self):
         return self.object_file.url
